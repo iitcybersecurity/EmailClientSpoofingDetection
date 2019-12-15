@@ -8,3 +8,7 @@ RESTPLUS_VALIDATE = True
 RESTPLUS_MASK_SWAGGER = False
 RESTPLUS_ERROR_404_HELP = False
 
+# Database settings
+SQLALCHEMY_DATABASE_URI = 'mysql://root:$ProjectWork2020@localhost:3306/email-spoofing-detection'
+SQLALCHEMY_TRACK_MODIFICATIONS = False
+SQLALCHEMY_ECHO = True

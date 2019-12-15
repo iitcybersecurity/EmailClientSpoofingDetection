@@ -1,10 +1,12 @@
 from flask import Flask, Blueprint
+from Restplus import api
+from flask_sqlalchemy import SQLAlchemy
 
 import settings
 from Endpoints.apiEndpoint import ns_endpoint
-from Restplus import api
 
 app = Flask(__name__)
+db = SQLAlchemy(app)
 
 def configure_app(flask_app):
     flask_app.config['SERVER_NAME'] = settings.FLASK_SERVER_NAME
@@ -12,6 +14,9 @@ def configure_app(flask_app):
     flask_app.config['RESTPLUS_VALIDATE'] = settings.RESTPLUS_VALIDATE
     flask_app.config['RESTPLUS_MASK_SWAGGER'] = settings.RESTPLUS_MASK_SWAGGER
     flask_app.config['ERROR_404_HELP'] = settings.RESTPLUS_ERROR_404_HELP
+    flask_app.config['SQLALCHEMY_DATABASE_URI'] = settings.SQLALCHEMY_DATABASE_URI
+    flask_app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = settings.SQLALCHEMY_TRACK_MODIFICATIONS
+    flask_app.config['SQLALCHEMY_ECHO'] = settings.SQLALCHEMY_ECHO
 
 
 def initialize_app(flask_app):
@@ -19,7 +24,6 @@ def initialize_app(flask_app):
     blueprint = Blueprint('api', __name__, url_prefix='/flaskAPI')
     api.init_app(blueprint)
     api.add_namespace(ns_endpoint)
-
     flask_app.register_blueprint(blueprint)
 
 

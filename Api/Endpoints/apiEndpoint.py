@@ -1,31 +1,30 @@
 from flask import Response
 from flask_restplus import Resource
 from Restplus import api
+from DTO.LoginDto import LoginDto
 
 
-from Endpoints.Utils import JsonTransformer
+# from Endpoints.Utils import JsonTransformer
 
-ns_endpoint = api.namespace('api/storage', description='description')
-upload_parser = api.parser()
+ns_endpoint = LoginDto.endpoint
+# api = LoginDto.api
+_login = LoginDto.login
 
-
-
-upload_parser.add_argument("user_id", location='form', type=str)
-
-
-@ns_endpoint.route("/upload", methods=['POST'])
+@ns_endpoint.route("/", methods=['POST'])
 class apiEndpoint(Resource):
+    # def get(self):
+    #     return 'Hello, world!'
 
-    #Rest Api used to upload a file
-    @api.expect(upload_parser)
+    #Rest Api used to make login, if necessary create user and download emails
+    @api.doc('Rest Api used to make login, if necessary create user and download emails')
+    @api.expect(_login, validate=True)
     def post(self):
-        args = upload_parser.parse_args()
-        arg_value = args["user_id"]  # This is FileStorage instance
-        transformToJson = JsonTransformer()
-        result = arg_value
-        jsonResult = transformToJson.transform(result)
+        response_object = {
+            'status': 'success',
+            'message': 'Successfully downloaded emails'
+        }
 
-        return Response(jsonResult, status=200, mimetype='application/json')
+        return response_object, 200
 
 
 
