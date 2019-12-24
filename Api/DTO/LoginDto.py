@@ -1,8 +1,8 @@
 from flask_restplus import fields
 from Restplus import api
 
+
 class LoginDto:
-    endpoint = api.namespace('api/login', description='login related operations')
     login = api.model('login', {
         'email_address': fields.String(required=True, description='user email address'),
         'password': fields.String(required=True, description='user password'),

@@ -1,12 +1,10 @@
 from flask import Flask, Blueprint
 from Restplus import api
-from flask_sqlalchemy import SQLAlchemy
-
-import settings
 from Endpoints.apiEndpoint import ns_endpoint
+import settings
 
 app = Flask(__name__)
-db = SQLAlchemy(app)
+
 
 def configure_app(flask_app):
     flask_app.config['SERVER_NAME'] = settings.FLASK_SERVER_NAME
@@ -29,4 +27,4 @@ def initialize_app(flask_app):
 
 if __name__ == '__main__':
     initialize_app(app)
-    app.run(debug= settings.FLASK_DEBUG)
+    app.run(debug=settings.FLASK_DEBUG)
