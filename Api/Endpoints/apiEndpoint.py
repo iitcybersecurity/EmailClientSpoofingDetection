@@ -3,6 +3,7 @@ from flask_restplus import Resource
 from Restplus import api
 from DTO.LoginDto import LoginDto
 from Service.DBService import get_user
+from Service.StorageService import create_user_folders
 
 ns_endpoint = api.namespace('api/login', description='login related operations')
 _login = LoginDto.login
@@ -16,17 +17,14 @@ class apiEndpoint(Resource):
     @api.expect(_login, validate=True)
     def post(self):
         data = request.get_json()
-        existing_user = get_user(data['email_address'])
+        email_address = data['email_address']
+        existing_user = get_user(email_address)
         response_object = ""
         if(not existing_user):
-            response_object = {
-                'status': 'success',
-                'message': 'User does not exist',
-            }
-        else:
-            response_object = {
-                'status': 'success',
-                'message': 'User exists',
-            }
+            create_user_folders(email_address)
 
+        response_object = {
+            'status': 'success',
+            'message': 'User does not exist',
+        }
         return response_object, 200
