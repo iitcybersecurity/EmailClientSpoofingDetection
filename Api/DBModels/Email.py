@@ -14,3 +14,15 @@ class Email(Base):
     Tested: Column(Boolean, nullable=False)
     Prediction: Column(Integer, nullable=True)
     Verified: Column(Boolean, nullable=False)
+
+    def __init__(self, recipient, sender, timestamp, toTrain=False, toTest=False, trained=False, tested=False, prediction=None, verified=False):
+        self.Recipient = recipient
+        self.Sender = sender
+        self.Timestamp = timestamp
+        self.ToTrain = toTrain
+        self.ToTest = toTest
+        self.Trained = trained
+        self.Tested = tested
+        self.Prediction = prediction
+        self.Verified = verified
+  
