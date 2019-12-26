@@ -5,7 +5,7 @@ from datetime import datetime
 from Restplus import api
 from DTO.LoginDto import LoginDto
 from Service.DBService import get_user, insert_to_train_email, get_last_timestamp_by_recipient, email_exists, insert_to_test_email
-from Service.FileSystemService import create_user_folders
+from Service.FileSystemService import create_user_folders, store_email
 from Service.MailServerConnectionService import download_emails
 
 
@@ -26,7 +26,8 @@ class apiEndpoint(Resource):
         # Get user email address from request
         email_address = login_data['email_address']
         # Get date start from request
-        date_start = datetime.strptime(login_data['date_start'], "%Y-%m-%dT%H:%M:%S.%f%z").date()
+        date_start = datetime.strptime(
+            login_data['date_start'], "%Y-%m-%dT%H:%M:%S.%f%z").date()
         # Verify if the user already exists on db
         existing_user = get_user(email_address)
         # If not exists create file system folders to save downloaded emails and neural network models, else get last timestamp on db
@@ -39,16 +40,20 @@ class apiEndpoint(Resource):
                 date_compare_list = [date_start, last_timestamp]
                 date_start = min(date_compare_list)
         # Download email starting from the oldest date between date_start from request and last_timestamp(if it exists)
-        download_response = download_emails(email_address, login_data['password'], login_data['email_port'], login_data['email_imap'], date_start)
+        download_response = download_emails(
+            email_address, login_data['password'], login_data['email_port'], login_data['email_imap'], date_start)
         # `response` is keyed by message id and contains parsed, converted response items.
         for message_id, data in download_response.items():
             envelope = data[b'ENVELOPE']
-            # parsedEmail = email.message_from_string(data['RFC822'])
+            # parsedEmail = email.message_from_string(data[b'RFC822'])
             # body = email.message_from_string(data['BODY[TEXT]'])
             # parsedBody = parsedEmail.get_payload(0)
             sender = envelope.from_[0]
-            sender_address = '{mailbox}@{host}'.format(mailbox=sender.mailbox.decode(), host=sender.host.decode())
+            sender_address = '{mailbox}@{host}'.format(
+                mailbox=sender.mailbox.decode(), host=sender.host.decode())
+
             # TODO: controllo su validità formato indirizzo
+
             timestamp = envelope.date
             print('{id}: {size} bytes, flags={flags}, sender={sender}, subject={subject}, date={date}'.format(
                 id=message_id,
@@ -57,16 +62,21 @@ class apiEndpoint(Resource):
                 sender=sender_address,
                 subject=envelope.subject.decode(),
                 date=timestamp))
-                
-            # If user not exists insert email into db and mark it to train
+
+            # Un'email potrebbe già esistere anche per utenti "nuovi" se ci sono due email arrivate dallo stesso mittente allo stesso secondo e
+            # una è già stata inserita ai passi prima.
+            # E' successo con due email di verifica di sicurezza da parte di Microsoft.
             if(not email_exists(email_address, sender_address, timestamp)):
-                # Un'email potrebbe già esistere anche per utenti "nuovi" se ci sono due email arrivate dallo stesso mittente allo stesso secondo e 
-                # una è già stata inserita ai passi prima.
-                # E' successo con due email di verifica di sicurezza da parte di Microsoft.
+                # Salva la email su file system nella cartella dell'utente ricevente
+                store_email(email_address, data[b'RFC822'], message_id)
+
+                # If user not exists insert email into db and mark it to train
                 if(not existing_user):
-                    insert_to_train_email(email_address, sender_address, timestamp)
+                    insert_to_train_email(
+                        email_address, sender_address, timestamp)
                 else:
-                    insert_to_test_email(email_address, sender_address, timestamp)
+                    insert_to_test_email(
+                        email_address, sender_address, timestamp)
 
         response_object = {
             'status': 'success',

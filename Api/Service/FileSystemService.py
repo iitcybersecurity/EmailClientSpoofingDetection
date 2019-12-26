@@ -1,8 +1,9 @@
 import os
 
+current_path = os.getcwd()
+
 
 def create_user_folders(email_address):
-    current_path = os.getcwd()
     user_folder_path = current_path + '\\Storage\\' + email_address
     if not os.path.exists(user_folder_path):
         models_path = user_folder_path + '\\Models'
@@ -10,3 +11,10 @@ def create_user_folders(email_address):
         os.makedirs(user_folder_path)
         os.makedirs(models_path)
         os.makedirs(emails_path)
+
+
+def store_email(email_address, email_data, message_id):
+    user_emails_folder_path = current_path + '\\Storage\\' + email_address + '\\Emails\\'
+    f = open('%s/%s.eml' % (user_emails_folder_path, message_id), 'wb')
+    f.write(email_data)
+    f.close()

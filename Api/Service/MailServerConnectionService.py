@@ -13,7 +13,7 @@ def download_emails(address, password, email_port, email_imap, date_start):
     messages = server.search([u'SINCE', date_start + timedelta(days=1)])
 
     # fetch selectors are passed as a simple list of strings.
-    response = server.fetch(messages, ['FLAGS', 'RFC822.SIZE', 'RFC822', 'ENVELOPE', 'BODY[HEADER]', 'BODY[TEXT]'])
+    response = server.fetch(messages, ('FLAGS', 'RFC822.SIZE', 'RFC822', 'ENVELOPE'))
 
     server.logout()
 
