@@ -1,7 +1,7 @@
-from flask import request
+from flask import request, Response
 from flask_restplus import Resource
 from datetime import datetime
-# import email
+from Endpoints.Utils import JsonTransformer
 from Restplus import api
 from DTO.LoginDto import LoginDto
 from Service.DBService import get_user, insert_to_train_email, get_last_timestamp_by_recipient, email_exists, insert_to_test_email
@@ -45,9 +45,6 @@ class apiEndpoint(Resource):
         # `response` is keyed by message id and contains parsed, converted response items.
         for message_id, data in download_response.items():
             envelope = data[b'ENVELOPE']
-            # parsedEmail = email.message_from_string(data[b'RFC822'])
-            # body = email.message_from_string(data['BODY[TEXT]'])
-            # parsedBody = parsedEmail.get_payload(0)
             sender = envelope.from_[0]
             sender_address = '{mailbox}@{host}'.format(
                 mailbox=sender.mailbox.decode(), host=sender.host.decode())
@@ -78,9 +75,11 @@ class apiEndpoint(Resource):
                     insert_to_test_email(
                         email_address, sender_address, timestamp)
 
-        response_object = {
-            'status': 'success',
-            'message': 'Success',
-        }
+        transformToJson = JsonTransformer()
+        json_result = transformToJson.transform(data[b'RFC822'])
+        # response_object = {
+        #     'status': 'success',
+        #     'message': 'Success',
+        # }
 
-        return response_object, 200
+        return Response(json_result, status=200, mimetype='application/json')

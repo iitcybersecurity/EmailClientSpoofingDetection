@@ -1,6 +1,7 @@
 from flask import Flask, Blueprint
 from Restplus import api
 from Endpoints.apiEndpoint import ns_endpoint
+from Endpoints.humanCheckEndpoint import ns_human_check_endpoint
 import settings
 
 app = Flask(__name__)
@@ -22,6 +23,7 @@ def initialize_app(flask_app):
     blueprint = Blueprint('api', __name__, url_prefix='/flaskAPI')
     api.init_app(blueprint)
     api.add_namespace(ns_endpoint)
+    api.add_namespace(ns_human_check_endpoint)
     flask_app.register_blueprint(blueprint)
 
 

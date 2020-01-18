@@ -15,17 +15,40 @@ def get_user(recipient):
 def get_last_timestamp_by_recipient(recipient):
     Session = sessionmaker(bind=engine)
     session = Session()
-    last_timestamp = session.query(Email).filter(Email.Recipient == recipient).order_by(desc(Email.Timestamp)).first().Timestamp
+    last_timestamp = session.query(Email).filter(
+        Email.Recipient == recipient).order_by(desc(Email.Timestamp)).first().Timestamp
     if(last_timestamp):
         last_timestamp = last_timestamp.date()
     return last_timestamp
+
+
+# Get email
+def get_email(recipient, sender, timestamp):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    return session.query(Email).\
+        filter(Email.Recipient == recipient).\
+        filter(Email.Sender == sender).\
+        filter(Email.Timestamp == timestamp).\
+        first()
+
+
+# Get emails by recipient and sender
+def get_emails_by_couple(recipient, sender):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    return session.query(Email).filter(Email.Recipient == recipient).filter(Email.Sender == sender).all()
 
 
 # Verify if an email already exists on db
 def email_exists(recipient, sender, timestamp):
     Session = sessionmaker(bind=engine)
     session = Session()
-    return session.query(Email).filter(Email.Recipient == recipient).filter(Email.Sender == sender).filter(Email.Timestamp == timestamp).scalar() is not None
+    return session.query(Email).\
+        filter(Email.Recipient == recipient).\
+        filter(Email.Sender == sender).\
+        filter(Email.Timestamp == timestamp).\
+        scalar() is not None
 
 
 # Insert email into db and mark it as to train
@@ -43,4 +66,39 @@ def insert_to_test_email(recipient, sender, timestamp):
     Session = sessionmaker(bind=engine)
     session = Session()
     session.add(email)
+    session.commit()
+
+
+# Manual verify to list of emails
+def report_human_prediction(email_list):
+    for email_checked in email_list:
+        verify_email(
+            email_checked['recipient'], email_checked['sender'], email_checked['timestamp'])
+        set_emails_to_train(
+            email_checked['recipient'], email_checked['sender'])
+
+
+# Verify single email
+def verify_email(recipient, sender, timestamp):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    if email_exists(recipient, sender, timestamp):
+        print('LA EMAIL ESISTE')
+        session.query(Email).\
+            filter(Email.Recipient == recipient).\
+            filter(Email.Sender == sender).\
+            filter(Email.Timestamp == timestamp).\
+            update({Email.Prediction: 1, Email.Verified: True}, synchronize_session=False)
+    session.commit()
+
+
+# Set emails with recipient and sender given and prediction positive toTrain
+def set_emails_to_train(recipient, sender):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    session.query(Email).\
+        filter(Email.Recipient == recipient).\
+        filter(Email.Sender == sender).\
+        filter(Email.Prediction is not None and Email.Prediction > 0).\
+        update({Email.ToTrain: True}, synchronize_session=False)
     session.commit()

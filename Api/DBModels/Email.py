@@ -1,5 +1,5 @@
 from database import engine, Base
-from sqlalchemy import Column, String, DateTime, Boolean, Integer
+from sqlalchemy import Column, String, DateTime, Boolean, Integer, Float
 
 
 class Email(Base):
@@ -12,7 +12,7 @@ class Email(Base):
     ToTest: Column(Boolean, nullable=False)
     Trained: Column(Boolean, nullable=False)
     Tested: Column(Boolean, nullable=False)
-    Prediction: Column(Integer, nullable=True)
+    Prediction: Column(Float, nullable=True)
     Verified: Column(Boolean, nullable=False)
 
     def __init__(self, recipient, sender, timestamp, toTrain=False, toTest=False, trained=False, tested=False, prediction=None, verified=False):
@@ -25,4 +25,3 @@ class Email(Base):
         self.Tested = tested
         self.Prediction = prediction
         self.Verified = verified
-  
