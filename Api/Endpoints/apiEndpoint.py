@@ -10,11 +10,11 @@ from Service.MailServerConnectionService import download_emails
 
 
 ns_endpoint = api.namespace(
-    'api/login', description='login related operations')
+    'login', description='login related operations')
 _login = LoginDto.login
 
 
-@ns_endpoint.route("/", methods=['POST'])
+@ns_endpoint.route("", methods=['POST'])
 class apiEndpoint(Resource):
 
     # Rest Api used to make login, if necessary create user and download emails
@@ -43,6 +43,7 @@ class apiEndpoint(Resource):
         download_response = download_emails(
             email_address, login_data['password'], login_data['email_port'], login_data['email_imap'], date_start)
         # `response` is keyed by message id and contains parsed, converted response items.
+        email_list = []
         for message_id, data in download_response.items():
             envelope = data[b'ENVELOPE']
             sender = envelope.from_[0]
@@ -52,14 +53,18 @@ class apiEndpoint(Resource):
             # TODO: controllo su validità formato indirizzo
 
             timestamp = envelope.date
-            print('{id}: {size} bytes, flags={flags}, sender={sender}, subject={subject}, date={date}'.format(
-                id=message_id,
-                size=data[b'RFC822.SIZE'],
-                flags=data[b'FLAGS'],
-                sender=sender_address,
-                subject=envelope.subject.decode(),
-                date=timestamp))
+            subject = envelope.subject.decode()
+            body = data[b'BODY[TEXT]'].decode(errors="ignore")
+            # print('{id}: {size} bytes, flags={flags}, sender={sender}, subject={subject}, date={date}'.format(
+            #     id=message_id,
+            #     size=data[b'RFC822.SIZE'],
+            #     flags=data[b'FLAGS'],
+            #     sender=sender_address,
+            #     subject=subject,
+            #     date=timestamp))
 
+            envelope_dic = {"Sender": sender_address, "Subject": subject, "Timestamp": timestamp, "Body": body}
+            email_list.append(envelope_dic)
             # Un'email potrebbe già esistere anche per utenti "nuovi" se ci sono due email arrivate dallo stesso mittente allo stesso secondo e
             # una è già stata inserita ai passi prima.
             # E' successo con due email di verifica di sicurezza da parte di Microsoft.
@@ -76,10 +81,6 @@ class apiEndpoint(Resource):
                         email_address, sender_address, timestamp)
 
         transformToJson = JsonTransformer()
-        json_result = transformToJson.transform(data[b'RFC822'])
-        # response_object = {
-        #     'status': 'success',
-        #     'message': 'Success',
-        # }
+        json_result = transformToJson.transform(email_list)
 
         return Response(json_result, status=200, mimetype='application/json')

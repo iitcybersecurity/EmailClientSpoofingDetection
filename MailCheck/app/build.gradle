@@ -42,9 +42,10 @@ dependencies {
     implementation files('libs/activation.jar')
     implementation files('libs/additionnal.jar')
     implementation files('libs/mail.jar')
-    compile 'info.debatty:java-string-similarity:1.1.0'
-    compile group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.6'
-    compile group: 'org.jsoup', name: 'jsoup', version: '1.11.3'
+    implementation 'info.debatty:java-string-similarity:1.1.0'
+    implementation group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.6'
+    implementation group: 'org.jsoup', name: 'jsoup', version: '1.11.3'
+    implementation 'com.google.code.gson:gson:2.6.1'
 
 
 }

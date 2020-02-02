@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity implements MailListener {
 
     String address, password, imap_port, imap_host;
     MailManager mailObj;
-
+    MailManagerNew mailObjNew;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,11 +59,11 @@ public class MainActivity extends AppCompatActivity implements MailListener {
 
 
         //Create mailManager object in order to manage the mail account
-        mailObj = new MailManager(address, password, imap_host, imap_port, NUM_MAX_MAIL, 0,this, getContentResolver());
+        mailObjNew = new MailManagerNew(address, password, imap_host, imap_port, NUM_MAX_MAIL, total_mail_number, MainActivity.this, getContentResolver());
 
         //Check email address connection
-        Integer[] mailManagerParam = { 0 };
-        mailObj.execute(mailManagerParam);
+        //Integer[] mailManagerParam = { 0 };
+        mailObjNew.execute();
 
         //get all the contacts in the phone book
         // Check the SDK version and whether the permission is already granted or not.
@@ -95,25 +95,57 @@ public class MainActivity extends AppCompatActivity implements MailListener {
             startActivity(intent);
             finish();
         }else{
-                mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-                    @Override
-                    public void onRefresh() {
-                        try {
-                            mailObj = new MailManager(address, password, imap_host, imap_port, NUM_MAX_MAIL, total_mail_number, MainActivity.this, getContentResolver());
-                            Integer[] mailManagerParam = {2};
-                            mailObj.execute(mailManagerParam);
-                        }catch (Exception e){
-                            System.out.println(e.getMessage());
-                        }
-                    }
-                });
-                try {
-                    mailObj = new MailManager(address, password, imap_host, imap_port, NUM_MAX_MAIL, total_mail_number, this, getContentResolver());
-                    Integer[] mailManagerParam = {1};
-                    mailObj.execute(mailManagerParam);
-                }catch (Exception e){
+            mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+                    try {
+                        mailObj = new MailManager(address, password, imap_host, imap_port, NUM_MAX_MAIL, total_mail_number, MainActivity.this, getContentResolver());
+                        Integer[] mailManagerParam = {2};
+                        mailObj.execute(mailManagerParam);
+                    }catch (Exception e){
                         System.out.println(e.getMessage());
+                    }
                 }
+            });
+            try {
+                mailObj = new MailManager(address, password, imap_host, imap_port, NUM_MAX_MAIL, total_mail_number, this, getContentResolver());
+                Integer[] mailManagerParam = {1};
+                mailObj.execute(mailManagerParam);
+            }catch (Exception e){
+                System.out.println(e.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public void mailDownloadCompleted(boolean status, String message) {
+        if(!status) {
+            mailObjNew.cancel(true);
+            System.out.println(message);
+            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            intent.putExtra("error", message);
+            startActivity(intent);
+            finish();
+        }else{
+            mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+                    try {
+                        mailObjNew = new MailManagerNew(address, password, imap_host, imap_port, NUM_MAX_MAIL, total_mail_number, MainActivity.this, getContentResolver());
+                        //Integer[] mailManagerParam = {2};
+                        mailObjNew.execute();
+                    }catch (Exception e){
+                        System.out.println(e.getMessage());
+                    }
+                }
+            });
+            try {
+                mailObjNew = new MailManagerNew(address, password, imap_host, imap_port, NUM_MAX_MAIL, total_mail_number, MainActivity.this, getContentResolver());
+                //Integer[] mailManagerParam = {1};
+                mailObj.execute();
+            }catch (Exception e){
+                System.out.println(e.getMessage());
+            }
         }
     }
 

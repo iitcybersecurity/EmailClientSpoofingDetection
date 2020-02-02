@@ -5,11 +5,11 @@ from DTO.EmailCheckedDto import EmailCheckedDto
 from Service.DBService import report_human_prediction
 
 ns_human_check_endpoint = api.namespace(
-    'api/human-check', description='human check')
+    'human-check', description='human check')
 _emailChecked = EmailCheckedDto.emailChecked
 
 
-@ns_human_check_endpoint.route("/", methods=['POST'])
+@ns_human_check_endpoint.route("", methods=['POST'])
 class humanCheckEndpoint(Resource):
 
     # Rest Api used to make manually check emails validity

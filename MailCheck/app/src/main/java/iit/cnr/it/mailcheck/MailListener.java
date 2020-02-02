@@ -10,5 +10,6 @@ import javax.mail.Message;
 
 public interface MailListener {
     void checkCompleted(boolean status, String message);
+    void mailDownloadCompleted(boolean status, String message);
     void mailLoadCompleted(ArrayList<Mail> messages, int total_mails);
 }

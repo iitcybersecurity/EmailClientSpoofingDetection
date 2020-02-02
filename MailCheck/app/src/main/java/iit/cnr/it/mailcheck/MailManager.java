@@ -57,24 +57,13 @@ public class MailManager extends AsyncTask<Integer, Void, Void> implements Conta
 
     private String getConnection(){
         Properties props = new Properties();
-        /*
-        props.setProperty("mail.imap.port", "993");
-        props.setProperty("mail.store.protocol", "imaps");
 
-        props.setProperty("mail.imap.port", "143");
-        props.setProperty("mail.store.protocol", "imaps");
-        */
         props.setProperty("mail.imap.port", imap_port);
         props.setProperty("mail.store.protocol", "imaps");
 
 
         try {
             Session session = Session.getDefaultInstance(props, null);
-            //store = session.getStore("imaps");
-            //store.connect("imap.gmail.com", address, password);
-
-            //store = session.getStore("imaps");
-            //store.connect("imap.iit.cnr.it", address, password);
 
             store = session.getStore("imaps");
             store.connect(imap_host, address, password);
