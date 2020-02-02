@@ -70,7 +70,7 @@ class apiEndpoint(Resource):
             # E' successo con due email di verifica di sicurezza da parte di Microsoft.
             if(not email_exists(email_address, sender_address, timestamp)):
                 # Salva la email su file system nella cartella dell'utente ricevente
-                store_email(email_address, data[b'RFC822'], message_id)
+                store_email(email_address, sender_address, data[b'RFC822'], message_id)
 
                 # If user not exists insert email into db and mark it to train
                 if(not existing_user):
