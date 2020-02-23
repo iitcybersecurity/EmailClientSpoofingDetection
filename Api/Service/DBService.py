@@ -83,7 +83,6 @@ def verify_email(recipient, sender, timestamp):
     Session = sessionmaker(bind=engine)
     session = Session()
     if email_exists(recipient, sender, timestamp):
-        print('LA EMAIL ESISTE')
         session.query(Email).\
             filter(Email.Recipient == recipient).\
             filter(Email.Sender == sender).\

@@ -13,11 +13,11 @@ def create_user_folders(email_address):
         os.makedirs(emails_path)
 
 
-def store_email(recipient_address, sender_address, email_data, message_id):
+def store_email(recipient_address, sender_address, email_data, timestamp):
     user_emails_folder_path = current_path + '/Storage/' + recipient_address + '/Emails/' + sender_address
     if not os.path.exists(user_emails_folder_path):
         os.makedirs(user_emails_folder_path)
 
-    f = open('%s/%s.eml' % (user_emails_folder_path, message_id), 'wb')
+    f = open('%s/%s.eml' % (user_emails_folder_path, str(timestamp).replace(" ", "_").replace(":", "")), 'wb')
     f.write(email_data)
     f.close()
