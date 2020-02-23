@@ -2,6 +2,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import desc
 from database import engine
 from DBModels.Email import Email
+import random
 
 
 # Get user from db if exists
@@ -101,3 +102,33 @@ def set_emails_to_train(recipient, sender):
         filter(Email.Prediction is not None and Email.Prediction > 0).\
         update({Email.ToTrain: True}, synchronize_session=False)
     session.commit()
+
+
+# Get positive emails number to train
+def get_positive_training_emails_number(recipient, sender):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    to_train_email_number = session.query(Email).\
+        filter(Email.Recipient == recipient).\
+        filter(Email.Sender == sender).\
+        filter(Email.ToTrain).\
+        count()
+    session.commit()
+    return to_train_email_number
+
+
+# Get a given number of emails for training with sender different from given sender.
+def get_negative_email_for_training(sender, emails_number):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    emails = session.query(Email).filter(Email.Sender != sender).filter(Email.ToTrain).all()
+    random.shuffle(emails)
+    return emails[:emails_number]
+
+
+# Get senders for a given recipient
+def get_senders_for_recipient(recipient):
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    result = session.query(Email.Sender).filter(Email.Recipient == recipient).distinct().all()
+    return [Sender for Sender, in result]

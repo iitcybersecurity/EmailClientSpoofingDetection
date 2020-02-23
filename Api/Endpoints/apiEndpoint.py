@@ -4,10 +4,12 @@ from datetime import datetime
 from Endpoints.Utils import JsonTransformer
 from Restplus import api
 from DTO.LoginDto import LoginDto
-from Service.DBService import get_user, insert_to_train_email, get_last_timestamp_by_recipient, email_exists, insert_to_test_email
-from Service.FileSystemService import create_user_folders, store_email
+from Service.DBService import get_user, insert_to_train_email, get_last_timestamp_by_recipient, email_exists, insert_to_test_email, get_positive_training_emails_number, get_negative_email_for_training, get_senders_for_recipient
+from Service.FileSystemService import create_user_folders, store_email, copy_emails_to_path
 from Service.MailServerConnectionService import download_emails
+import os
 
+current_path = os.getcwd()
 
 ns_endpoint = api.namespace(
     'login', description='login related operations')
@@ -63,22 +65,47 @@ class apiEndpoint(Resource):
             #     subject=subject,
             #     date=timestamp))
 
-            envelope_dic = {"Sender": sender_address, "Subject": subject, "Timestamp": timestamp, "Body": body}
+            envelope_dic = {"Sender": sender_address,
+                            "Subject": subject, "Timestamp": timestamp, "Body": body}
             email_list.append(envelope_dic)
             # Un'email potrebbe già esistere anche per utenti "nuovi" se ci sono due email arrivate dallo stesso mittente allo stesso secondo e
             # una è già stata inserita ai passi prima.
             # E' successo con due email di verifica di sicurezza da parte di Microsoft.
             if(not email_exists(email_address, sender_address, timestamp)):
                 # Salva la email su file system nella cartella dell'utente ricevente
-                store_email(email_address, sender_address, data[b'RFC822'], timestamp)
+                store_email(email_address, sender_address,
+                            data[b'RFC822'], timestamp, existing_user)
 
                 # If user not exists insert email into db and mark it to train
                 if(not existing_user):
                     insert_to_train_email(
                         email_address, sender_address, timestamp)
-                else:
-                    insert_to_test_email(
-                        email_address, sender_address, timestamp)
+
+            else:
+                insert_to_test_email(
+                    email_address, sender_address, timestamp)
+
+        if(not existing_user):
+            print('PRIMA DI SENDER LIST')
+            sender_list = get_senders_for_recipient(email_address)
+            print('DOPO SENDER LIST')
+            for sender in sender_list:
+                print('SENDER = ' + sender)
+                to_train_email_number = get_positive_training_emails_number(
+                    email_address, sender)
+
+                negative_emails = get_negative_email_for_training(
+                    sender, to_train_email_number)
+
+                copy_emails_to_path(
+                    negative_emails, '{current_path}/{storage}/{email_address}/{trainings}/{sender_address}-{email_address}/{negative}'.format(
+                        current_path=current_path,
+                        storage='Storage',
+                        email_address=email_address,
+                        trainings='Trainings',
+                        sender_address=sender,
+                        negative='Negative'
+                    ))
 
         transformToJson = JsonTransformer()
         json_result = transformToJson.transform(email_list)

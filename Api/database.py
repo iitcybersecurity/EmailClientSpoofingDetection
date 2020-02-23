@@ -4,5 +4,5 @@ from sqlalchemy.ext.declarative import declarative_base
 import settings
 
 # db = SQLAlchemy()
-engine = create_engine(settings.SQLALCHEMY_DATABASE_URI, echo=True)
+engine = create_engine(settings.SQLALCHEMY_DATABASE_URI, echo=True, pool_size=20)
 Base = declarative_base(engine)
